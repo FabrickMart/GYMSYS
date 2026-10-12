@@ -20,3 +20,8 @@ staticfiles/
 
 # VS Code
 .vscode/
+
+# Archivos temporales y basura
+*.tmp
+*.bak
+*~
