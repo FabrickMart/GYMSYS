@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ alumno.nombre_completo }} — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">{{ alumno.nombre_completo }}</h2>
+        <p class="text-muted mb-0">
+            <code>{{ alumno.matricula }}</code>
+            {% if alumno.activo %}
+                <span class="badge bg-success">Activo</span>
+            {% else %}
+                <span class="badge bg-secondary">Baja</span>
+            {% endif %}
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'alumnos:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+        <a href="{% url 'alumnos:editar' alumno.pk %}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        {% if user.rol == 'admin' or user.is_superuser %}
+            {% if alumno.activo %}
+                <a href="{% url 'alumnos:baja' alumno.pk %}" class="btn btn-danger">
+                    <i class="bi bi-person-x"></i> Dar de baja
+                </a>
+            {% else %}
+                <a href="{% url 'alumnos:reactivar' alumno.pk %}" class="btn btn-success">
+                    <i class="bi bi-person-check"></i> Reactivar
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Datos personales</strong></div>
+            <div class="card-body">
+                <p><strong>Edad:</strong> {{ alumno.edad }} años {% if alumno.es_menor %}<span class="badge bg-warning text-dark">Menor</span>{% endif %}</p>
+                <p><strong>Fecha de nacimiento:</strong> {{ alumno.fecha_nacimiento }}</p>
+                <p><strong>Sexo:</strong> {{ alumno.get_sexo_display }}</p>
+                <p><strong>CURP:</strong> {{ alumno.curp|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Contacto</strong></div>
+            <div class="card-body">
+                <p><strong>Teléfono:</strong> {{ alumno.telefono }}</p>
+                <p><strong>Email:</strong> {{ alumno.email|default:"—" }}</p>
+                <p><strong>Dirección:</strong> {{ alumno.direccion|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Tutor</strong></div>
+            <div class="card-body">
+                {% if alumno.tutor_nombre %}
+                    <p><strong>Nombre:</strong> {{ alumno.tutor_nombre }}</p>
+                    <p><strong>Teléfono:</strong> {{ alumno.tutor_telefono }}</p>
+                    <p><strong>Parentesco:</strong> {{ alumno.tutor_parentesco }}</p>
+                {% else %}
+                    <p class="text-muted">Sin tutor registrado.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Emergencia</strong></div>
+            <div class="card-body">
+                <p><strong>Contacto:</strong> {{ alumno.contacto_emergencia_nombre|default:"—" }}</p>
+                <p><strong>Teléfono:</strong> {{ alumno.contacto_emergencia_telefono|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Datos del gimnasio</strong></div>
+            <div class="card-body">
+                <p><strong>Ingreso:</strong> {{ alumno.fecha_ingreso }}</p>
+                <p><strong>Categoría:</strong> {{ alumno.get_categoria_display }}</p>
+                <p><strong>Peso:</strong> {{ alumno.peso_kg|default:"—" }} kg</p>
+                <p><strong>Tipo de sangre:</strong> {{ alumno.tipo_sangre|default:"—" }}</p>
+                <p><strong>Alergias:</strong> {{ alumno.alergias|default:"Ninguna registrada" }}</p>
+            </div>
+        </div>
+    </div>
+    {% if not alumno.activo %}
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white"><strong>Baja</strong></div>
+            <div class="card-body">
+                <p><strong>Fecha:</strong> {{ alumno.fecha_baja }}</p>
+                <p><strong>Motivo:</strong> {{ alumno.motivo_baja }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

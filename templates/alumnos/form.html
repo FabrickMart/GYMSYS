@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if modo == 'crear' %}Nuevo alumno{% else %}Editar alumno{% endif %} — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">
+    {% if modo == 'crear' %}
+        <i class="bi bi-person-plus"></i> Nuevo alumno
+    {% else %}
+        <i class="bi bi-pencil"></i> Editar alumno — {{ alumno.nombre_completo }}
+    {% endif %}
+</h2>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="card mb-3">
+        <div class="card-header"><strong>Identificación</strong></div>
+        <div class="card-body row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Nombre(s) *</label>
+                {{ form.nombre }}
+                {{ form.nombre.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Apellido paterno *</label>
+                {{ form.apellido_paterno }}
+                {{ form.apellido_paterno.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Apellido materno *</label>
+                {{ form.apellido_materno }}
+                {{ form.apellido_materno.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">CURP</label>
+                {{ form.curp }}
+                {{ form.curp.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Fecha de nacimiento *</label>
+                {{ form.fecha_nacimiento }}
+                {{ form.fecha_nacimiento.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sexo *</label>
+                {{ form.sexo }}
+                {{ form.sexo.errors }}
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header"><strong>Contacto</strong></div>
+        <div class="card-body row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Teléfono *</label>
+                {{ form.telefono }}
+                {{ form.telefono.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+                {{ form.email.errors }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Dirección</label>
+                {{ form.direccion }}
+                {{ form.direccion.errors }}
+            </div>
+        </div>
+    </div>
+
+<div class="card mb-3" id="card-tutor">
+    <div class="card-header">
+        <strong>Tutor</strong>
+        <span id="tutor-badge-menor" class="badge bg-warning text-dark ms-2" style="display:none;">
+            Obligatorio para menores de edad
+        </span>
+        <span id="tutor-badge-mayor" class="badge bg-secondary ms-2" style="display:none;">
+            No aplica para mayores de edad
+        </span>
+    </div>
+    <div class="card-body row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Nombre del tutor</label>
+            {{ form.tutor_nombre }}
+            {{ form.tutor_nombre.errors }}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Teléfono del tutor</label>
+            {{ form.tutor_telefono }}
+            {{ form.tutor_telefono.errors }}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Parentesco</label>
+            {{ form.tutor_parentesco }}
+            {{ form.tutor_parentesco.errors }}
+        </div>
+    </div>
+</div>
+
+
+
+    <div class="card mb-3">
+        <div class="card-header"><strong>Contacto de emergencia</strong></div>
+        <div class="card-body row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Nombre</label>
+                {{ form.contacto_emergencia_nombre }}
+                {{ form.contacto_emergencia_nombre.errors }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Teléfono</label>
+                {{ form.contacto_emergencia_telefono }}
+                {{ form.contacto_emergencia_telefono.errors }}
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header"><strong>Datos del gimnasio</strong></div>
+        <div class="card-body row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Fecha de ingreso *</label>
+                {{ form.fecha_ingreso }}
+                {{ form.fecha_ingreso.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Categoría *</label>
+                {{ form.categoria }}
+                {{ form.categoria.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Peso (kg)</label>
+                {{ form.peso_kg }}
+                {{ form.peso_kg.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Tipo de sangre</label>
+                {{ form.tipo_sangre }}
+                {{ form.tipo_sangre.errors }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Alergias / condiciones médicas</label>
+                {{ form.alergias }}
+                {{ form.alergias.errors }}
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-5">
+        <a href="{% url 'alumnos:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const fechaInput = document.getElementById('id_fecha_nacimiento');
+    const cardTutor = document.getElementById('card-tutor');
+    const badgeMenor = document.getElementById('tutor-badge-menor');
+    const badgeMayor = document.getElementById('tutor-badge-mayor');
+    const camposTutor = [
+        document.getElementById('id_tutor_nombre'),
+        document.getElementById('id_tutor_telefono'),
+        document.getElementById('id_tutor_parentesco'),
+    ];
+
+    function calcularEdad(fechaStr) {
+        if (!fechaStr) return null;
+        const hoy = new Date();
+        const fn = new Date(fechaStr);
+        let edad = hoy.getFullYear() - fn.getFullYear();
+        const m = hoy.getMonth() - fn.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < fn.getDate())) edad--;
+        return edad;
+    }
+
+    function actualizarTutor() {
+        const edad = calcularEdad(fechaInput.value);
+
+        if (edad === null) {
+            // Sin fecha: mostrar todo normal, sin deshabilitar
+            cardTutor.classList.remove('opacity-50');
+            camposTutor.forEach(c => { if (c) c.disabled = false; });
+            badgeMenor.style.display = 'none';
+            badgeMayor.style.display = 'none';
+            return;
+        }
+
+        if (edad < 18) {
+            cardTutor.classList.remove('opacity-50');
+            camposTutor.forEach(c => { if (c) c.disabled = false; });
+            badgeMenor.style.display = 'inline-block';
+            badgeMayor.style.display = 'none';
+        } else {
+            cardTutor.classList.add('opacity-50');
+            camposTutor.forEach(c => {
+                if (c) {
+                    c.disabled = true;
+                    c.value = '';
+                }
+            });
+            badgeMenor.style.display = 'none';
+            badgeMayor.style.display = 'inline-block';
+        }
+    }
+
+    if (fechaInput) {
+        fechaInput.addEventListener('change', actualizarTutor);
+        // Ejecutar al cargar (para el caso de edición)
+        actualizarTutor();
+    }
+})();
+</script>
+
+
+{% endblock %}

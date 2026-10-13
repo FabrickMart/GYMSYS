@@ -8,6 +8,7 @@ urlpatterns = [
     # Raíz → redirige al login (que a su vez redirige al dashboard si ya está logueado)
     path('', RedirectView.as_view(pattern_name='usuarios:login', permanent=False)),
 
-    # URLs de la app usuarios
+    # URLs de las apps
     path('', include('apps.usuarios.urls')),
+    path('alumnos/', include('apps.alumnos.urls')),
 ]
