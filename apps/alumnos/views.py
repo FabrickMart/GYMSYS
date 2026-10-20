@@ -44,8 +44,26 @@ def lista_alumnos(request):
 
 @admin_o_personal
 def detalle_alumno(request, pk):
+    from apps.pagos.models import Suscripcion, Pago
+
     alumno = get_object_or_404(Alumno, pk=pk)
-    return render(request, 'alumnos/detalle.html', {'alumno': alumno})
+
+    # Suscripción (crear si no existe y recalcular)
+    suscripcion, _ = Suscripcion.objects.get_or_create(alumno=alumno)
+    suscripcion.recalcular()
+
+    # Último pago no anulado
+    ultimo_pago = (
+        Pago.objects.filter(alumno=alumno, anulado=False)
+        .order_by('-fecha_pago')
+        .first()
+    )
+
+    return render(request, 'alumnos/detalle.html', {
+        'alumno': alumno,
+        'suscripcion': suscripcion,
+        'ultimo_pago': ultimo_pago,
+    })
 
 
 @admin_o_personal

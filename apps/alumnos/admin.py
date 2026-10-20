@@ -5,8 +5,8 @@ from .models import Alumno
 @admin.register(Alumno)
 class AlumnoAdmin(admin.ModelAdmin):
     list_display = ('matricula', 'apellido_paterno', 'apellido_materno', 'nombre',
-                    'categoria', 'telefono', 'activo')
-    list_filter = ('activo', 'categoria', 'sexo', 'tipo_sangre')
+                    'categoria', 'es_estudiante', 'telefono', 'activo')
+    list_filter = ('activo', 'categoria', 'sexo', 'tipo_sangre', 'es_estudiante')
     search_fields = ('matricula', 'nombre', 'apellido_paterno', 'apellido_materno', 'telefono', 'curp')
     readonly_fields = ('matricula', 'creado_en', 'actualizado_en', 'creado_por', 'actualizado_por')
     date_hierarchy = 'fecha_ingreso'
@@ -26,7 +26,7 @@ class AlumnoAdmin(admin.ModelAdmin):
             'fields': ('contacto_emergencia_nombre', 'contacto_emergencia_telefono'),
         }),
         ('Datos del gimnasio', {
-            'fields': ('fecha_ingreso', 'categoria', 'peso_kg', 'tipo_sangre', 'alergias'),
+            'fields': ('fecha_ingreso', 'categoria', 'peso_kg', 'tipo_sangre', 'alergias', 'es_estudiante'),
         }),
         ('Estado', {
             'fields': ('activo', 'fecha_baja', 'motivo_baja'),

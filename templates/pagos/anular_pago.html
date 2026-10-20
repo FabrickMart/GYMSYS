@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Anular pago — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger shadow">
+            <div class="card-header bg-danger text-white">
+                <strong><i class="bi bi-exclamation-triangle"></i> Anular pago</strong>
+            </div>
+            <div class="card-body">
+                <p>¿Anular el pago <code>{{ pago.folio }}</code> de <strong>{{ pago.alumno.nombre_completo }}</strong> por <strong>${{ pago.monto_final }}</strong>?</p>
+                <p class="text-muted small">
+                    El pago <strong>no se elimina</strong>. Solo se marca como anulado, y se recalcula la suscripción del alumno.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Motivo de anulación *</label>
+                        {{ form.motivo }}
+                        {{ form.motivo.errors }}
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'pagos:detalle_pago' pago.pk %}" class="btn btn-outline-secondary">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle"></i> Confirmar anulación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

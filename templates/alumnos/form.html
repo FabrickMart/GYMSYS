@@ -146,6 +146,16 @@
                 {{ form.tipo_sangre.errors }}
             </div>
             <div class="col-md-12">
+                 <div class="form-check">
+                   {{ form.es_estudiante }}
+                   <label class="form-check-label" for="{{ form.es_estudiante.id_for_label  }}">
+                         {{ form.es_estuddiante.label }}
+                   </label>
+                   <div class="form-text">{{ form.es_estudiante.help_text }}</div>
+                   {{ form.es_estudiante.errors }}
+            </div>
+            </div>            
+            <div class="col-md-12">
                 <label class="form-label">Alergias / condiciones médicas</label>
                 {{ form.alergias }}
                 {{ form.alergias.errors }}

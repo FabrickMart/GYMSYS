@@ -21,13 +21,39 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card border-success">
+ <a href="{% url 'pagos:lista_suscripciones' %}" class="text-decoration-none">      
+  <div class="card border-success h-100">
             <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-cash-coin"></i> Pagos</h5>
-                <p class="card-text text-muted">Módulo en construcción.</p>
+                <h5 class="card-title text-success"><i class="bi bi-cash-coin"></i> Pagos</h5>
+                <p class="card-text text-muted">Suscripciones, pagos y vencimientos.</p>
             </div>
         </div>
+      </a>
     </div>
+
+<div class="col-md-4">
+    <a href="{% url 'pagos:lista_planes' %}" class="text-decoration-none">
+        <div class="card border-info h-100">
+            <div class="card-body">
+                <h5 class="card-title text-info"><i class="bi bi-list-check"></i> Planes</h5>
+                <p class="card-text text-muted">Catálogo de planes y precios.</p>
+            </div>
+        </div>
+    </a>
+</div>
+
+<div class="col-md-4">
+    <a href="{% url 'pagos:lista_suscripciones' %}" class="text-decoration-none">
+        <div class="card border-warning h-100">
+            <div class="card-body">
+                <h5 class="card-title text-warning"><i class="bi bi-card-checklist"></i> Suscripciones</h5>
+                <p class="card-text text-muted">Estado de vencimientos por alumno.</p>
+            </div>
+        </div>
+    </a>
+</div>
+
+
     <div class="col-md-4">
         <div class="card border-warning">
             <div class="card-body">
@@ -44,4 +70,20 @@
     <strong>{{ user.get_rol_display }}</strong>.
     La sesión se cierra automáticamente tras 15 minutos de inactividad.
 </div>
+
+<div class="mt-4">
+    <h5>Accesos rápidos</h5>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'pagos:registrar' %}" class="btn btn-success">
+            <i class="bi bi-cash-coin"></i> Registrar pago
+        </a>
+        <a href="{% url 'pagos:lista_suscripciones' %}?estado=por_vencer" class="btn btn-warning">
+            <i class="bi bi-bell"></i> Por vencer
+        </a>
+        <a href="{% url 'pagos:lista_suscripciones' %}?estado=vencidos" class="btn btn-danger">
+            <i class="bi bi-exclamation-triangle"></i> Vencidos
+        </a>
+    </div>
+</div>
+
 {% endblock %}

@@ -105,6 +105,11 @@ class Alumno(models.Model):
         default=Categoria.ADULTO,
         verbose_name='Categoría',
     )
+    es_estudiante = models.BooleanField(
+        default=False,
+        verbose_name='¿Es estudiante?',
+        help_text='Si está marcado, aplica descuentos configurados por el administrador (solo en plan mensual).',
+    )
 
     peso_kg = models.DecimalField(
         max_digits=5,

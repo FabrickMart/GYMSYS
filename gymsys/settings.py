@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.usuarios',
     'apps.auditoria',
     'apps.alumnos',
+    'apps.pagos',
 ]
 
 

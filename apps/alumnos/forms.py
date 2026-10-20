@@ -21,7 +21,7 @@ class AlumnoForm(forms.ModelForm):
             'telefono', 'email', 'direccion',
             'tutor_nombre', 'tutor_telefono', 'tutor_parentesco',
             'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
-            'fecha_ingreso', 'categoria', 'peso_kg', 'tipo_sangre', 'alergias',
+            'fecha_ingreso', 'categoria', 'es_estudiante', 'peso_kg', 'tipo_sangre', 'alergias',
         ]
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
@@ -31,7 +31,11 @@ class AlumnoForm(forms.ModelForm):
             'fecha_nacimiento': forms.DateInput(
                 attrs={'class': 'form-control', 'type': 'date'},
                 format='%Y-%m-%d',
+
             ),
+           
+            'es_estudiante': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+
             'sexo': forms.Select(attrs={'class': 'form-select'}),
             'telefono': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),

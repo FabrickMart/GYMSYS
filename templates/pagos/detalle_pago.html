@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Pago {{ pago.folio }} — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">Pago <code>{{ pago.folio }}</code></h2>
+        <p class="text-muted mb-0">{{ pago.fecha_pago|date:"d/m/Y H:i" }}</p>
+    </div>
+    <div>
+        <a href="{% url 'pagos:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+        {% if not pago.anulado %}
+            {% if user.rol == 'admin' or user.is_superuser %}
+                <a href="{% url 'pagos:anular' pago.pk %}" class="btn btn-danger">
+                    <i class="bi bi-x-circle"></i> Anular
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+{% if pago.anulado %}
+<div class="alert alert-danger">
+    <strong><i class="bi bi-exclamation-triangle"></i> Pago anulado</strong> el {{ pago.anulado_en|date:"d/m/Y H:i" }} por
+    {{ pago.anulado_por.username|default:"—" }}.<br>
+    <strong>Motivo:</strong> {{ pago.anulado_motivo }}
+</div>
+{% endif %}
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Alumno</strong></div>
+            <div class="card-body">
+                <p><a href="{% url 'pagos:detalle_alumno' pago.alumno.pk %}">{{ pago.alumno.nombre_completo }}</a></p>
+                <p><strong>Matrícula:</strong> {{ pago.alumno.matricula }}</p>
+                <p><strong>Teléfono:</strong> {{ pago.alumno.telefono }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Concepto</strong></div>
+            <div class="card-body">
+                <p><strong>Plan:</strong> {{ pago.plan.nombre }}</p>
+                {% if pago.es_inscripcion %}
+                    <p><span class="badge bg-info text-dark">Pago de inscripción</span></p>
+                {% endif %}
+                <p><strong>Monto base:</strong> ${{ pago.monto_base }}</p>
+                {% if pago.descuento_aplicado > 0 %}
+                    <p><strong>Descuento:</strong> -${{ pago.descuento_aplicado }} <small class="text-muted">({{ pago.motivo_descuento }})</small></p>
+                {% endif %}
+                <p class="fs-5"><strong>Total: ${{ pago.monto_final }}</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Pago</strong></div>
+            <div class="card-body">
+                <p><strong>Método:</strong> {{ pago.get_metodo_pago_display }}</p>
+                {% if pago.referencia %}<p><strong>Referencia:</strong> {{ pago.referencia }}</p>{% endif %}
+                {% if pago.notas %}<p><strong>Notas:</strong> {{ pago.notas }}</p>{% endif %}
+                <p><strong>Registrado por:</strong> {{ pago.registrado_por.username|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Periodo cubierto</strong></div>
+            <div class="card-body">
+                <p><strong>Inicio:</strong> {{ pago.periodo_inicio|date:"d/m/Y" }}</p>
+                <p><strong>Fin:</strong> {{ pago.periodo_fin|date:"d/m/Y"|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

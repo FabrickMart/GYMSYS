@@ -22,6 +22,9 @@
         <a href="{% url 'alumnos:editar' alumno.pk %}" class="btn btn-primary">
             <i class="bi bi-pencil"></i> Editar
         </a>
+       <a href="{% url 'pagos:detalle_alumno' alumno.pk %}" class="btn btn-success">
+    <i class="bi bi-cash-coin"></i> Ver historial de pagos
+</a>
         {% if user.rol == 'admin' or user.is_superuser %}
             {% if alumno.activo %}
                 <a href="{% url 'alumnos:baja' alumno.pk %}" class="btn btn-danger">
@@ -90,7 +93,8 @@
                 <p><strong>Peso:</strong> {{ alumno.peso_kg|default:"—" }} kg</p>
                 <p><strong>Tipo de sangre:</strong> {{ alumno.tipo_sangre|default:"—" }}</p>
                 <p><strong>Alergias:</strong> {{ alumno.alergias|default:"Ninguna registrada" }}</p>
-            </div>
+                <p><strong>Estudiante:</strong> {% if alumno.es_estudiante %}Sí (aplica descuento){% else %}No{% endif %}</p>
+     </div>
         </div>
     </div>
     {% if not alumno.activo %}
@@ -105,4 +109,71 @@
     </div>
     {% endif %}
 </div>
+
+<div class="row g-3 mt-3">
+    <div class="col-md-6">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <strong><i class="bi bi-card-checklist"></i> Estado de suscripción</strong>
+            </div>
+            <div class="card-body">
+                <p class="fs-5 mb-2">
+                    {% if suscripcion.estado == 'activo' %}
+                        <span class="badge bg-success">Activo</span>
+                    {% elif suscripcion.estado == 'por_vencer' %}
+                        <span class="badge bg-warning text-dark">Por vencer</span>
+                    {% elif suscripcion.estado == 'en_gracia' %}
+                        <span class="badge bg-info text-dark">En gracia</span>
+                    {% elif suscripcion.estado == 'vencido' %}
+                        <span class="badge bg-danger">Vencido</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ suscripcion.get_estado_display }}</span>
+                    {% endif %}
+                </p>
+                <p class="mb-1"><strong>Plan actual:</strong> {{ suscripcion.plan_actual.nombre|default:"—" }}</p>
+                <p class="mb-1"><strong>Vencimiento:</strong> {{ suscripcion.fecha_vencimiento|date:"d/m/Y"|default:"—" }}</p>
+                <p class="mb-1"><strong>Inscripción:</strong>
+                    {% if suscripcion.inscripcion_pagada %}
+                        <span class="text-success">Pagada</span>
+                    {% else %}
+                        <span class="text-danger">Pendiente</span>
+                    {% endif %}
+                </p>
+                <p class="mb-0"><strong>Puede ingresar:</strong>
+                    {% if suscripcion.puede_ingresar %}
+                        <span class="text-success">Sí</span>
+                    {% else %}
+                        <span class="text-danger">No</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <strong><i class="bi bi-receipt"></i> Último pago</strong>
+            </div>
+            <div class="card-body">
+                {% if ultimo_pago %}
+                    <p class="mb-1"><strong>Folio:</strong> <code>{{ ultimo_pago.folio }}</code></p>
+                    <p class="mb-1"><strong>Fecha:</strong> {{ ultimo_pago.fecha_pago|date:"d/m/Y H:i" }}</p>
+                    <p class="mb-1"><strong>Concepto:</strong> {{ ultimo_pago.plan.nombre }}</p>
+                    <p class="mb-1"><strong>Monto:</strong> ${{ ultimo_pago.monto_final }}</p>
+                    <p class="mb-0"><strong>Método:</strong> {{ ultimo_pago.get_metodo_pago_display }}</p>
+                    <a href="{% url 'pagos:detalle_pago' ultimo_pago.pk %}" class="btn btn-sm btn-outline-success mt-2">
+                        <i class="bi bi-eye"></i> Ver detalle
+                    </a>
+                {% else %}
+                    <p class="text-muted mb-0">Sin pagos registrados.</p>
+                    <a href="{% url 'pagos:registrar_para_alumno' alumno.pk %}" class="btn btn-success mt-2">
+                        <i class="bi bi-cash-coin"></i> Registrar primer pago
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

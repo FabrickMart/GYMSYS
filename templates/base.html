@@ -14,19 +14,52 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'usuarios:dashboard' %}">
-            <i class="bi bi-shield-shaded"></i> GYMSYS-MMA
-        </a>
-        <div class="ms-auto d-flex align-items-center text-white">
-            <span class="me-3">
-                <i class="bi bi-person-circle"></i>
-                {{ user.get_full_name|default:user.username }}
-                <small class="text-muted">({{ user.get_rol_display }})</small>
-            </span>
-            <a href="{% url 'usuarios:logout' %}" class="btn btn-sm btn-outline-light">
-                <i class="bi bi-box-arrow-right"></i> Salir
+    <i class="bi bi-shield-shaded"></i> GYMSYS-MMA
+</a>
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+    <span class="navbar-toggler-icon"></span>
+</button>
+<div class="collapse navbar-collapse" id="navbarMain">
+    <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'alumnos:lista' %}">
+                <i class="bi bi-people"></i> Alumnos
             </a>
-        </div>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <i class="bi bi-cash-coin"></i> Pagos
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'pagos:lista' %}">Pagos</a></li>
+                <li><a class="dropdown-item" href="{% url 'pagos:lista_suscripciones' %}">Suscripciones</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'pagos:registrar' %}">Registrar pago</a></li>
+            </ul>
+        </li>
+        {% if user.rol == 'admin' or user.is_superuser %}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <i class="bi bi-gear"></i> Configuración
+            </a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'pagos:lista_planes' %}">Planes</a></li>
+                <li><a class="dropdown-item" href="/admin/pagos/configuraciondescuento/1/change/">Descuentos</a></li>
+            </ul>
+        </li>
+        {% endif %}
+    </ul>
+    <div class="d-flex align-items-center text-white">
+        <span class="me-3">
+            <i class="bi bi-person-circle"></i>
+            {{ user.get_full_name|default:user.username }}
+            <small class="text-muted">({{ user.get_rol_display }})</small>
+        </span>
+        <a href="{% url 'usuarios:logout' %}" class="btn btn-sm btn-outline-light">
+            <i class="bi bi-box-arrow-right"></i> Salir
+        </a>
     </div>
+</div>
 </nav>
 {% endif %}
 
@@ -47,3 +80,4 @@
 {% block extra_js %}{% endblock %}
 </body>
 </html>
+O

@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar pago — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<h2 class="mb-3"><i class="bi bi-cash-coin"></i> Registrar pago</h2>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><strong>Alumno y plan</strong></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Alumno *</label>
+                        {{ form.alumno }}
+                        {{ form.alumno.errors }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Plan de mensualidad *</label>
+                        {{ form.plan }}
+                        {{ form.plan.errors }}
+                    </div>
+                    <div class="form-check mb-2">
+                        {{ form.pagar_inscripcion }}
+                        <label class="form-check-label" for="{{ form.pagar_inscripcion.id_for_label }}">
+                            {{ form.pagar_inscripcion.label }}
+                        </label>
+                        <div class="form-text">{{ form.pagar_inscripcion.help_text }}</div>
+                        {{ form.pagar_inscripcion.errors }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><strong>Método de pago</strong></div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Método *</label>
+                        {{ form.metodo_pago }}
+                        {{ form.metodo_pago.errors }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Referencia</label>
+                        {{ form.referencia }}
+                        {{ form.referencia.errors }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notas</label>
+                        {{ form.notas }}
+                        {{ form.notas.errors }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3 border-success">
+        <div class="card-header bg-success text-white"><strong>Resumen del cobro</strong></div>
+        <div class="card-body">
+            <div id="resumen">
+                <p class="text-muted mb-0">Selecciona un alumno y un plan para ver el resumen.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-3 mb-5">
+        <a href="{% url 'pagos:lista' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Cancelar
+        </a>
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle"></i> Confirmar cobro
+        </button>
+    </div>
+</form>
+
+<script>
+(function () {
+    const selectAlumno = document.getElementById('id_alumno');
+    const selectPlan = document.getElementById('id_plan');
+    const checkInscripcion = document.getElementById('id_pagar_inscripcion');
+    const resumen = document.getElementById('resumen');
+
+    // Contenedor del checkbox de inscripción (para ocultarlo)
+    const contInscripcion = checkInscripcion ? checkInscripcion.closest('.form-check') : null;
+
+    let alumnoInfo = null;
+    let planInfo = null;
+    let configInfo = { descuento_inscripcion_estudiante_pct: 0, descuento_mensualidad_estudiante_pct: 0 };
+    let planInscripcionInfo = null;
+
+    // ---------- Carga de config al inicio ----------
+    fetch('/pagos/api/config/')
+        .then(r => r.json())
+        .then(data => { configInfo = data; })
+        .catch(() => {});
+
+    // ---------- Alumnos ----------
+    function cargarAlumno() {
+        const id = selectAlumno.value;
+        if (!id) {
+            alumnoInfo = null;
+            mostrarInscripcion(false);
+            actualizarResumen();
+            return;
+        }
+        fetch('/pagos/api/alumno/' + id + '/info/')
+            .then(r => r.json())
+            .then(data => {
+                alumnoInfo = data;
+                mostrarInscripcion(!data.inscripcion_pagada);
+                actualizarResumen();
+            })
+            .catch(() => {});
+    }
+
+    function mostrarInscripcion(mostrar) {
+        if (!contInscripcion) return;
+        if (mostrar) {
+            contInscripcion.style.display = '';
+            // Sugerir marcar si nunca ha pagado
+            if (checkInscripcion && !checkInscripcion.dataset.touched) {
+                checkInscripcion.checked = true;
+            }
+        } else {
+            contInscripcion.style.display = 'none';
+            checkInscripcion.checked = false;
+        }
+    }
+
+    // ---------- Planes ----------
+    function cargarPlan() {
+        const id = selectPlan.value;
+        if (!id) {
+            planInfo = null;
+            actualizarResumen();
+            return;
+        }
+        fetch('/pagos/api/plan/' + id + '/info/')
+            .then(r => r.json())
+            .then(data => {
+                planInfo = data;
+                actualizarResumen();
+            })
+            .catch(() => {});
+    }
+
+    // ---------- Resumen ----------
+    function actualizarResumen() {
+        if (!alumnoInfo || !planInfo) {
+            resumen.innerHTML = '<p class="text-muted mb-0">Selecciona un alumno y un plan para ver el resumen.</p>';
+            return;
+        }
+
+        let totalBase = 0;
+        let totalDescuento = 0;
+        let filas = [];
+
+        // Inscripción
+        const cobraInsc = checkInscripcion && checkInscripcion.checked && !alumnoInfo.inscripcion_pagada;
+        if (cobraInsc && planInscripcionInfo) {
+            const baseInsc = planInscripcionInfo.precio;
+            let descInsc = 0;
+            if (alumnoInfo.es_estudiante) {
+                descInsc = baseInsc * configInfo.descuento_inscripcion_estudiante_pct / 100;
+            }
+            totalBase += baseInsc;
+            totalDescuento += descInsc;
+            filas.push({
+                concepto: 'Inscripción',
+                base: baseInsc,
+                descuento: descInsc,
+                motivo: descInsc > 0 ? 'Estudiante ' + configInfo.descuento_inscripcion_estudiante_pct + '%' : ''
+            });
+        }
+
+        // Mensualidad
+        const basePlan = planInfo.precio;
+        let descPlan = 0;
+        if (alumnoInfo.es_estudiante && planInfo.es_mensual) {
+            descPlan = basePlan * configInfo.descuento_mensualidad_estudiante_pct / 100;
+        }
+        totalBase += basePlan;
+        totalDescuento += descPlan;
+        filas.push({
+            concepto: planInfo.nombre,
+            base: basePlan,
+            descuento: descPlan,
+            motivo: descPlan > 0 ? 'Estudiante ' + configInfo.descuento_mensualidad_estudiante_pct + '%' : ''
+        });
+
+        const totalFinal = totalBase - totalDescuento;
+
+        // Render
+        let html = '<div class="mb-2"><strong>' + alumnoInfo.nombre + '</strong> <small class="text-muted">(' + alumnoInfo.matricula + ')</small>';
+        if (alumnoInfo.es_estudiante) {
+            html += ' <span class="badge bg-info text-dark">Estudiante</span>';
+        }
+        html += '</div>';
+
+        html += '<table class="table table-sm mb-2"><thead><tr><th>Concepto</th><th class="text-end">Base</th><th class="text-end">Descuento</th><th class="text-end">Subtotal</th></tr></thead><tbody>';
+        filas.forEach(f => {
+            html += '<tr><td>' + f.concepto + (f.motivo ? ' <small class="text-success">(' + f.motivo + ')</small>' : '') + '</td>';
+            html += '<td class="text-end">$' + f.base.toFixed(2) + '</td>';
+            html += '<td class="text-end text-success">' + (f.descuento > 0 ? '-$' + f.descuento.toFixed(2) : '—') + '</td>';
+            html += '<td class="text-end">$' + (f.base - f.descuento).toFixed(2) + '</td></tr>';
+        });
+        html += '</tbody><tfoot><tr class="table-active"><td colspan="3" class="text-end"><strong>Total</strong></td><td class="text-end"><strong>$' + totalFinal.toFixed(2) + '</strong></td></tr></tfoot></table>';
+
+        if (totalDescuento > 0) {
+            html += '<p class="text-success mb-0"><small>Descuento total aplicado: -$' + totalDescuento.toFixed(2) + '</small></p>';
+        }
+        resumen.innerHTML = html;
+    }
+
+    // ---------- Cargar plan de inscripción (una sola vez) ----------
+    // Pedimos el plan de inscripción para conocer el precio (por convención el primero con tipo=inscripcion)
+    fetch('/pagos/api/config/')  // ya lo tenemos, pero necesitamos el plan de inscripción
+        .then(r => r.json())
+        .then(() => {
+            // No hay endpoint directo para el plan de inscripción.
+            // Solución: pedir el primero de la lista de planes del form? No aplica (el form solo muestra mensualidades).
+            // Por simplicidad, hacemos fetch a un endpoint que devuelva todos los planes de inscripción.
+            return fetch('/pagos/api/plan/inscripcion/');
+        })
+        .catch(() => {});
+    // (Este bloque se reemplazará con el endpoint correcto abajo)
+
+    // ---------- Bind de eventos ----------
+    if (selectAlumno) selectAlumno.addEventListener('change', cargarAlumno);
+    if (selectPlan) selectPlan.addEventListener('change', cargarPlan);
+    if (checkInscripcion) {
+        checkInscripcion.addEventListener('change', () => {
+            checkInscripcion.dataset.touched = '1';
+            actualizarResumen();
+        });
+    }
+
+    // ---------- Ejecución inicial (para edición / preselección) ----------
+    if (selectAlumno && selectAlumno.value) cargarAlumno();
+    if (selectPlan && selectPlan.value) cargarPlan();
+
+    // ---------- Cargar plan de inscripción desde el servidor ----------
+    // Endpoint: /pagos/api/plan-inscripcion/
+    fetch('/pagos/api/plan-inscripcion/')
+        .then(r => r.json())
+        .then(data => { planInscripcionInfo = data; actualizarResumen(); })
+        .catch(() => {});
+})();
+</script>
+{% endblock %}

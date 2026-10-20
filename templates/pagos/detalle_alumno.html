@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ alumno.nombre_completo }} — Pagos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">{{ alumno.nombre_completo }}</h2>
+        <p class="text-muted mb-0"><code>{{ alumno.matricula }}</code></p>
+    </div>
+    <div>
+        <a href="{% url 'alumnos:detalle' alumno.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-person"></i> Ver ficha
+        </a>
+        <a href="{% url 'pagos:registrar_para_alumno' alumno.pk %}" class="btn btn-success">
+            <i class="bi bi-cash-coin"></i> Registrar pago
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white"><strong>Estado de suscripción</strong></div>
+            <div class="card-body">
+                <p class="fs-4 mb-2">
+                    {% if suscripcion.estado == 'activo' %}
+                        <span class="badge bg-success">Activo</span>
+                    {% elif suscripcion.estado == 'por_vencer' %}
+                        <span class="badge bg-warning text-dark">Por vencer</span>
+                    {% elif suscripcion.estado == 'en_gracia' %}
+                        <span class="badge bg-info text-dark">En gracia</span>
+                    {% elif suscripcion.estado == 'vencido' %}
+                        <span class="badge bg-danger">Vencido</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ suscripcion.get_estado_display }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Plan actual:</strong> {{ suscripcion.plan_actual.nombre|default:"—" }}</p>
+                <p><strong>Vencimiento:</strong> {{ suscripcion.fecha_vencimiento|date:"d/m/Y"|default:"—" }}</p>
+                {% if suscripcion.dias_para_vencer is not None %}
+                    <p><strong>Días para vencer:</strong> {{ suscripcion.dias_para_vencer }}</p>
+                {% endif %}
+                <p><strong>Inscripción:</strong>
+                    {% if suscripcion.inscripcion_pagada %}
+                        <span class="text-success">Pagada el {{ suscripcion.fecha_inscripcion|date:"d/m/Y" }}</span>
+                    {% else %}
+                        <span class="text-danger">Pendiente</span>
+                    {% endif %}
+                </p>
+                <p><strong>Puede ingresar:</strong>
+                    {% if suscripcion.puede_ingresar %}
+                        <span class="text-success">Sí</span>
+                    {% else %}
+                        <span class="text-danger">No</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Datos de contacto</strong></div>
+            <div class="card-body">
+                <p><strong>Teléfono:</strong> {{ alumno.telefono }}</p>
+                <p><strong>Email:</strong> {{ alumno.email|default:"—" }}</p>
+                <p><strong>Estudiante:</strong> {% if alumno.es_estudiante %}Sí{% else %}No{% endif %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-2">Historial de pagos</h4>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Folio</th>
+                    <th>Fecha</th>
+                    <th>Concepto</th>
+                    <th>Periodo</th>
+                    <th class="text-end">Monto</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pagos %}
+                <tr>
+                    <td><code>{{ p.folio }}</code></td>
+                    <td>{{ p.fecha_pago|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {{ p.plan.nombre }}
+                        {% if p.es_inscripcion %}<span class="badge bg-info text-dark">Inscripción</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if p.periodo_fin %}
+                            {{ p.periodo_inicio|date:"d/m/Y" }} → {{ p.periodo_fin|date:"d/m/Y" }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="text-end">${{ p.monto_final }}</td>
+                    <td>
+                        {% if p.anulado %}
+                            <span class="badge bg-danger">Anulado</span>
+                        {% else %}
+                            <span class="badge bg-success">Vigente</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'pagos:detalle_pago' p.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Sin pagos registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
