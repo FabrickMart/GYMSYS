@@ -1,6 +1,7 @@
 """
 Servicio de recibos: genera PDF y envía por email.
 """
+import base64
 import logging
 from io import BytesIO
 
@@ -16,6 +17,16 @@ from apps.auditoria.utils import registrar_evento
 logger = logging.getLogger(__name__)
 
 
+def _logo_base64():
+    """Devuelve el logo como data URI base64 para embeberlo en el PDF."""
+    ruta = settings.BASE_DIR / 'static' / 'img' / 'mgteam.png'
+    if not ruta.exists():
+        return ''
+    with open(ruta, 'rb') as f:
+        data = base64.b64encode(f.read()).decode('utf-8')
+    return f'data:image/png;base64,{data}'
+
+
 def _contexto_recibo(pago):
     """Contexto común para el HTML del recibo."""
     alumno = pago.alumno
@@ -29,6 +40,7 @@ def _contexto_recibo(pago):
         'gym': settings.GYM_DATOS_FISCALES,
         'fecha_emision': timezone.now(),
         'modo_impresion': False,
+        'logo_data_uri': _logo_base64(),
     }
 
 

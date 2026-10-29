@@ -6,6 +6,7 @@ app_name = 'alumnos'
 urlpatterns = [
     path('', views.lista_alumnos, name='lista'),
     path('nuevo/', views.crear_alumno, name='crear'),
+    path('api/parse-curp/', views.api_parse_curp, name='api_parse_curp'),
     path('<int:pk>/', views.detalle_alumno, name='detalle'),
     path('<int:pk>/editar/', views.editar_alumno, name='editar'),
     path('<int:pk>/baja/', views.baja_alumno, name='baja'),

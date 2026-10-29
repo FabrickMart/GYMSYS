@@ -235,5 +235,89 @@
 })();
 </script>
 
+<script>
+(function () {
+    const inpCurp = document.getElementById('id_curp');
+    const inpFecha = document.getElementById('id_fecha_nacimiento');
+    const selSexo = document.getElementById('id_sexo');
+
+    if (!inpCurp) return;
+
+    let timeoutId = null;
+    let camposBloqueados = false;
+
+    function bloquearCampos() {
+        if (inpFecha) {
+            inpFecha.readOnly = true;
+            inpFecha.classList.add('bg-light');
+        }
+        if (selSexo) {
+            selSexo.disabled = true;
+            selSexo.classList.add('bg-light');
+        }
+        camposBloqueados = true;
+    }
+
+    function desbloquearCampos() {
+        if (inpFecha) {
+            inpFecha.readOnly = false;
+            inpFecha.classList.remove('bg-light');
+        }
+        if (selSexo) {
+            selSexo.disabled = false;
+            selSexo.classList.remove('bg-light');
+        }
+        camposBloqueados = false;
+    }
+
+    function consultarCurp() {
+        const curp = inpCurp.value.trim().toUpperCase();
+        if (curp.length !== 18) {
+            desbloquearCampos();
+            return;
+        }
+
+        fetch('/alumnos/api/parse-curp/?curp=' + encodeURIComponent(curp))
+            .then(r => r.json())
+            .then(data => {
+                if (!data.valida) {
+                    inpCurp.classList.add('is-invalid');
+                    setTimeout(() => inpCurp.classList.remove('is-invalid'), 1500);
+                    return;
+                }
+
+                // Autocompletar SIEMPRE (sobrescribir si cambia la CURP)
+                if (inpFecha) inpFecha.value = data.fecha_nacimiento;
+                if (selSexo) selSexo.value = data.sexo;
+
+                bloquearCampos();
+
+                inpCurp.classList.add('is-valid');
+                setTimeout(() => inpCurp.classList.remove('is-valid'), 1500);
+            })
+            .catch(() => {
+                inpCurp.classList.add('is-invalid');
+                setTimeout(() => inpCurp.classList.remove('is-invalid'), 1500);
+            });
+    }
+
+    inpCurp.addEventListener('blur', consultarCurp);
+    inpCurp.addEventListener('input', function () {
+        clearTimeout(timeoutId);
+        const curp = inpCurp.value.trim();
+        if (curp.length === 18) {
+            timeoutId = setTimeout(consultarCurp, 500);
+        } else if (curp.length === 0) {
+            // Si borra la CURP, desbloquear
+            desbloquearCampos();
+        }
+    });
+
+    // Si al cargar ya hay CURP válida (edición), bloquear
+    if (inpCurp.value && inpCurp.value.trim().length === 18) {
+        consultarCurp();
+    }
+})();
+</script>
 
 {% endblock %}

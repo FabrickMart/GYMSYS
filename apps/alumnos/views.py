@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 
 from apps.auditoria.models import Evento
 from apps.auditoria.utils import registrar_evento
@@ -169,3 +171,26 @@ def reactivar_alumno(request, pk):
     messages.success(request, f'Alumno {alumno.nombre_completo()} reactivado.')
     return redirect('alumnos:detalle', pk=alumno.pk)
 
+# ============================================================
+# API interna: parse de CURP
+# ============================================================
+
+@require_GET
+@admin_o_personal
+def api_parse_curp(request):
+    """Dada una CURP, devuelve fecha de nacimiento y sexo extraídos."""
+    from .utils import parse_curp
+
+    curp = request.GET.get('curp', '').strip()
+    info = parse_curp(curp)
+
+    if not info:
+        return JsonResponse({'valida': False, 'error': 'CURP inválida.'}, status=400)
+
+    return JsonResponse({
+        'valida': True,
+        'curp': info['curp'],
+        'fecha_nacimiento': info['fecha_nacimiento'].isoformat(),
+        'sexo': info['sexo'],
+        'estado': info['estado'],
+    })
