@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Reporte de ingresos — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-cash-coin"></i> Reporte de ingresos</h2>
+    <a href="{% url 'reportes:dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+    </a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <label class="form-label small">Desde</label>
+        <input type="date" name="fecha_inicio" value="{{ fecha_inicio|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label small">Hasta</label>
+        <input type="date" name="fecha_fin" value="{{ fecha_fin|date:'Y-m-d' }}" class="form-control">
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary w-100" type="submit">
+            <i class="bi bi-search"></i> Filtrar
+        </button>
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <a href="{% url 'reportes:ingresos_csv' %}?fecha_inicio={{ fecha_inicio|date:'Y-m-d' }}&fecha_fin={{ fecha_fin|date:'Y-m-d' }}"
+           class="btn btn-outline-success w-100">
+            <i class="bi bi-filetype-csv"></i> Exportar CSV
+        </a>
+    </div>
+</form>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body">
+                <h6 class="text-muted">Total del período</h6>
+                <p class="display-6 mb-0 text-success">${{ total }}</p>
+                <small class="text-muted">{{ cantidad }} pago(s)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><strong>Por método de pago</strong></div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    {% for m in por_metodo %}
+                        <li>
+                            <strong>{{ m.metodo_pago|title }}:</strong>
+                            ${{ m.total }} <small class="text-muted">({{ m.cantidad }})</small>
+                        </li>
+                    {% empty %}
+                        <li class="text-muted">Sin datos.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><strong>Por plan</strong></div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    {% for p in por_plan %}
+                        <li>
+                            <strong>{{ p.plan__nombre }}:</strong>
+                            ${{ p.total }} <small class="text-muted">({{ p.cantidad }})</small>
+                        </li>
+                    {% empty %}
+                        <li class="text-muted">Sin datos.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Folio</th>
+                    <th>Fecha</th>
+                    <th>Alumno</th>
+                    <th>Plan</th>
+                    <th class="text-end">Monto</th>
+                    <th>Método</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pagos %}
+                <tr>
+                    <td><code>{{ p.folio }}</code></td>
+                    <td>{{ p.fecha_pago|date:"d/m/Y H:i" }}</td>
+                    <td>{{ p.alumno.nombre_completo }}</td>
+                    <td>{{ p.plan.nombre }}</td>
+                    <td class="text-end">${{ p.monto_final }}</td>
+                    <td>{{ p.get_metodo_pago_display }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Sin pagos en el período.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'apps.notificaciones',
     'apps.clases',
     'apps.insumos',
+    'apps.reportes',
+    'apps.recibos',
 ]
 
 
@@ -223,3 +225,18 @@ DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='MG Team <brickamm@gma
 
 # Nombre del gimnasio (para plantillas)
 GYM_NOMBRE= config('MGTEAM', default='MG Team')
+ # ============================================================
+# Datos del gimnasio (para recibos)
+# ============================================================
+
+GYM_DATOS_FISCALES = {
+    'nombre': 'MG Team',
+    'razon_social': 'MG Team Entrenamiento S.A. de C.V.',
+    'rfc': 'MGT240101ABC',
+    'regimen_fiscal': 'Personas Físicas con Actividad Empresarial',
+    'direccion': 'Coliseo mil coronas',
+    'ciudad': 'Ecatepec, México, México',
+    'telefono': '+52 55 1234 5678',
+    'email': 'contacto@mgteam.mx',
+    'web': 'www.mgteam.mx',
+}

@@ -13,5 +13,6 @@ urlpatterns = [
     path('notificaciones/', include('apps.notificaciones.urls')),
     path('clases/', include('apps.clases.urls')),
     path('insumos/', include('apps.insumos.urls')),
-
+    path('reportes/', include('apps.reportes.urls')),
+    path('recibos/', include('apps.recibos.urls')),
 ]

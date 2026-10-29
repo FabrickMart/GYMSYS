@@ -14,7 +14,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'usuarios:dashboard' %}">
-    <i class="bi bi-shield-shaded"></i> GYMSYS-MMA
+    <i class="bi bi-shield-shaded"></i> MG TEAM
 </a>
 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
     <span class="navbar-toggler-icon"></span>
@@ -63,6 +63,12 @@
  </ul>
 </li>
 
+
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'reportes:dashboard' %}">
+        <i class="bi bi-graph-up"></i> Reportes
+    </a>
+</li>
 
 <li class="nav-item">
     <a class="nav-link" href="{% url 'notificaciones:lista' %}">

@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Reportes — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-graph-up"></i> Reportes</h2>
+    <div>
+        <a href="{% url 'reportes:suscripciones' %}" class="btn btn-outline-primary">
+            <i class="bi bi-card-checklist"></i> Suscripciones
+        </a>
+        <a href="{% url 'reportes:alumnos' %}" class="btn btn-outline-primary">
+            <i class="bi bi-people"></i> Alumnos
+        </a>
+        {% if es_admin %}
+        <a href="{% url 'reportes:ingresos' %}" class="btn btn-outline-success">
+            <i class="bi bi-cash-coin"></i> Ingresos
+        </a>
+        <a href="{% url 'reportes:ventas_insumos' %}" class="btn btn-outline-warning">
+            <i class="bi bi-box-seam"></i> Ventas insumos
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    {% if es_admin %}
+    <div class="col-md-3">
+        <div class="card border-success h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Ingresos del mes</h6>
+                <p class="display-6 mb-0 text-success">${{ kpis.ingresos_mes }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Ventas insumos (mes)</h6>
+                <p class="display-6 mb-0 text-warning">${{ kpis.ventas_insumos_mes }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="col-md-3">
+        <div class="card border-primary h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Alumnos activos</h6>
+                <p class="display-6 mb-0 text-primary">{{ kpis.alumnos_activos }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Por vencer</h6>
+                <p class="display-6 mb-0 text-danger">{{ kpis.suscripciones_por_vencer }}</p>
+                <small class="text-muted">Vencidos: {{ kpis.suscripciones_vencidas }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    {% if es_admin %}
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header"><strong>Ingresos de los últimos 12 meses</strong></div>
+            <div class="card-body">
+                <canvas id="chartIngresos" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><strong>Suscripciones por estado</strong></div>
+            <div class="card-body">
+                <canvas id="chartSuscripciones" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    {% if es_admin %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Top 5 productos vendidos</strong></div>
+            <div class="card-body">
+                <canvas id="chartProductos" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const ingresos = {{ ingresos_json|safe }};
+    const suscripciones = {{ suscripciones_json|safe }};
+    const productos = {{ top_productos_json|safe }};
+    const esAdmin = {{ es_admin|yesno:"true,false" }};
+
+    // 1) Ingresos mensuales (líneas)
+    if (esAdmin && document.getElementById('chartIngresos')) {
+        new Chart(document.getElementById('chartIngresos'), {
+            type: 'line',
+            data: {
+                labels: ingresos.labels,
+                datasets: [
+                    {
+                        label: 'Pagos',
+                        data: ingresos.pagos,
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25,135,84,0.1)',
+                        tension: 0.3,
+                        fill: true,
+                    },
+                    {
+                        label: 'Ventas insumos',
+                        data: ingresos.insumos,
+                        borderColor: '#ffc107',
+                        backgroundColor: 'rgba(255,193,7,0.1)',
+                        tension: 0.3,
+                        fill: true,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true } },
+            },
+        });
+    }
+
+    // 2) Suscripciones por estado (pastel)
+    if (document.getElementById('chartSuscripciones')) {
+        new Chart(document.getElementById('chartSuscripciones'), {
+            type: 'doughnut',
+            data: {
+                labels: suscripciones.labels,
+                datasets: [{
+                    data: suscripciones.data,
+                    backgroundColor: ['#198754', '#ffc107', '#0dcaf0', '#dc3545', '#6c757d'],
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } },
+            },
+        });
+    }
+
+    // 3) Top productos (barras)
+    if (esAdmin && document.getElementById('chartProductos')) {
+        new Chart(document.getElementById('chartProductos'), {
+            type: 'bar',
+            data: {
+                labels: productos.labels,
+                datasets: [{
+                    label: 'Unidades vendidas',
+                    data: productos.data,
+                    backgroundColor: 'rgba(13,110,253,0.6)',
+                    borderColor: '#0d6efd',
+                    borderWidth: 1,
+                }],
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } },
+            },
+        });
+    }
+})();
+</script>
+{% endblock %}

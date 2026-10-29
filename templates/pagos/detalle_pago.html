@@ -22,6 +22,14 @@
     </div>
 </div>
 
+<a href="{% url 'recibos:recibo_pago_html' pago.pk %}" class="btn btn-outline-secondary">
+    <i class="bi bi-receipt"></i> Ver recibo
+</a>
+<a href="{% url 'recibos:recibo_pago_pdf' pago.pk %}" class="btn btn-outline-danger" target="_blank">
+    <i class="bi bi-file-pdf"></i> Descargar PDF
+</a>
+
+
 {% if pago.anulado %}
 <div class="alert alert-danger">
     <strong><i class="bi bi-exclamation-triangle"></i> Pago anulado</strong> el {{ pago.anulado_en|date:"d/m/Y H:i" }} por
@@ -81,4 +89,34 @@
         </div>
     </div>
 </div>
+
+
+<div class="card mt-4">
+    <div class="card-header"><strong><i class="bi bi-envelope"></i> Enviar recibo por email</strong></div>
+    <div class="card-body">
+        <form method="post" action="{% url 'recibos:recibo_pago_enviar' pago.pk %}">
+            {% csrf_token %}
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">Destinatario</label>
+                    <input type="email" name="email" class="form-control"
+                           value="{{ pago.alumno.email }}"
+                           placeholder="email@ejemplo.com">
+                    <div class="form-text">Si lo dejas vacío, se usará el email del alumno.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Mensaje personalizado (opcional)</label>
+                    <input type="text" name="mensaje" class="form-control"
+                           placeholder="Mensaje adicional para el alumno...">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-send"></i> Enviar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}

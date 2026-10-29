@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recibo {{ pago.folio }} — {{ gym.nombre }}</title>
+    <style>
+        @page { size: Letter; margin: 2cm 1.5cm; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #1a202c;
+            font-size: 11pt;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .logo { width: 80px; height: 80px; }
+        .logo img { max-width: 80px; max-height: 80px; }
+        .gym-info h1 { margin: 0; font-size: 20pt; color: #0d6efd; }
+        .gym-info p { margin: 0; color: #64748b; font-size: 9pt; }
+        .header-right { text-align: right; }
+        .header-right h2 { margin: 0; font-size: 16pt; color: #1a202c; }
+        .header-right .folio { font-family: 'Courier New', monospace; color: #64748b; font-size: 10pt; }
+
+        .motivacional {
+            background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+            color: white;
+            padding: 18px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .motivacional h3 { margin: 0 0 5px 0; font-size: 14pt; }
+        .motivacional p { margin: 0; font-size: 10pt; opacity: 0.95; }
+
+        .row { display: flex; gap: 20px; margin-bottom: 20px; }
+        .col { flex: 1; }
+        .section-title {
+            font-size: 10pt;
+            text-transform: uppercase;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        .data-line { margin: 4px 0; font-size: 10pt; }
+        .data-line strong { color: #1a202c; }
+        .data-line span { color: #475569; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        thead { background: #f1f5f9; }
+        th {
+            text-align: left;
+            padding: 10px;
+            font-size: 10pt;
+            color: #475569;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        th.right { text-align: right; }
+        td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 10pt; }
+        td.right { text-align: right; }
+        .total-row { background: #0d6efd; color: white; font-weight: bold; }
+        .total-row td { font-size: 12pt; padding: 12px 10px; }
+
+        .info-box {
+            background: #f8fafc;
+            border-left: 4px solid #0d6efd;
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .info-box p { margin: 4px 0; font-size: 10pt; }
+        .info-box strong { color: #0d6efd; }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 8pt;
+            color: #64748b;
+            text-align: center;
+        }
+        .footer p { margin: 3px 0; }
+
+        .print-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0d6efd;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        @media print { .print-btn { display: none; } }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <div class="logo">
+            <img src="{% static 'img/mgteam.png' %}" alt="{{ gym.nombre }}">
+        </div>
+        <div class="gym-info">
+            <h1>{{ gym.nombre }}</h1>
+            <p>{{ gym.razon_social }} · RFC: {{ gym.rfc }}</p>
+            <p>{{ gym.ciudad }}</p>
+        </div>
+    </div>
+    <div class="header-right">
+        <h2>RECIBO DE PAGO</h2>
+        <p class="folio">{{ pago.folio }}</p>
+        <p style="color:#64748b; font-size:9pt;">{{ fecha_emision|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+<div class="motivacional">
+    <h3>¡Gracias por tu compromiso!</h3>
+    <p>Cada entrenamiento te acerca a tu mejor versión. Sigue así. 💪</p>
+</div>
+
+<div class="row">
+    <div class="col">
+        <div class="section-title">Datos del alumno</div>
+        <p class="data-line"><strong>Nombre:</strong> <span>{{ alumno.nombre_completo }}</span></p>
+        <p class="data-line"><strong>Matrícula:</strong> <span>{{ alumno.matricula }}</span></p>
+        <p class="data-line"><strong>Teléfono:</strong> <span>{{ alumno.telefono }}</span></p>
+        {% if alumno.email %}<p class="data-line"><strong>Email:</strong> <span>{{ alumno.email }}</span></p>{% endif %}
+    </div>
+    <div class="col">
+        <div class="section-title">Datos fiscales</div>
+        <p class="data-line"><strong>RFC:</strong> <span>{{ gym.rfc }}</span></p>
+        <p class="data-line"><strong>Régimen:</strong> <span>{{ gym.regimen_fiscal }}</span></p>
+        <p class="data-line"><strong>Dirección:</strong> <span>{{ gym.direccion }}</span></p>
+    </div>
+</div>
+
+<div class="section-title">Detalle del pago</div>
+<table>
+    <thead>
+        <tr>
+            <th>Concepto</th>
+            <th>Método</th>
+            <th class="right">Monto</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                {% if pago.es_inscripcion %}
+                    Inscripción — {{ pago.plan.nombre }}
+                {% else %}
+                    {{ pago.plan.nombre }}
+                {% endif %}
+                {% if pago.descuento_aplicado > 0 %}
+                    <br><small style="color:#198754;">Descuento aplicado: -${{ pago.descuento_aplicado }} ({{ pago.motivo_descuento }})</small>
+                {% endif %}
+                {% if pago.periodo_fin %}
+                    <br><small style="color:#64748b;">Período cubierto: {{ pago.periodo_inicio|date:"d/m/Y" }} → {{ pago.periodo_fin|date:"d/m/Y" }}</small>
+                {% endif %}
+            </td>
+            <td>{{ pago.get_metodo_pago_display }}</td>
+            <td class="right">${{ pago.monto_base }}</td>
+        </tr>
+        {% if pago.descuento_aplicado > 0 %}
+        <tr>
+            <td colspan="2" class="right"><strong>Descuento:</strong></td>
+            <td class="right" style="color:#198754;">-${{ pago.descuento_aplicado }}</td>
+        </tr>
+        {% endif %}
+        <tr class="total-row">
+            <td colspan="2" class="right">TOTAL PAGADO</td>
+            <td class="right">${{ pago.monto_final }}</td>
+        </tr>
+    </tbody>
+</table>
+
+{% if suscripcion.fecha_vencimiento %}
+<div class="info-box">
+    <p><strong>Próximo vencimiento:</strong> {{ suscripcion.fecha_vencimiento|date:"d/m/Y" }}
+    {% if suscripcion.dias_para_vencer is not None %}
+        {% if suscripcion.dias_para_vencer >= 0 %}
+            (en {{ suscripcion.dias_para_vencer }} días)
+        {% else %}
+            (vencido hace {{ suscripcion.dias_para_vencer|cut:"-" }} días)
+        {% endif %}
+    {% endif %}
+    </p>
+    <p><strong>Plan actual:</strong> {{ suscripcion.plan_actual.nombre|default:"—" }}</p>
+</div>
+{% endif %}
+
+<div class="footer">
+    <p><strong>{{ gym.nombre }}</strong> · {{ gym.direccion }}, {{ gym.ciudad }}</p>
+    <p>Tel: {{ gym.telefono }} · Email: {{ gym.email }} · {{ gym.web }}</p>
+    <p style="margin-top:8px;">Este recibo es un comprobante interno de pago. No constituye un comprobante fiscal (CFDI).</p>
+    <p>Recibo generado automáticamente por GYMSYS-MMA el {{ fecha_emision|date:"d/m/Y H:i" }}</p>
+</div>
+
+{% if not modo_impresion %}
+<a href="?print=1" class="print-btn" onclick="window.print(); return false;">🖨️ Imprimir</a>
+{% endif %}
+
+</body>
+</html>
