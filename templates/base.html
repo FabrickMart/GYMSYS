@@ -37,6 +37,44 @@
                 <li><a class="dropdown-item" href="{% url 'pagos:registrar' %}">Registrar pago</a></li>
             </ul>
         </li>
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        <i class="bi bi-calendar-week"></i> Clases
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{% url 'clases:lista_clases' %}">Clases</a></li>
+        <li><a class="dropdown-item" href="{% url 'clases:lista_entrenadores' %}">Entrenadores</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="{% url 'clases:horario_semanal' %}">Horario semanal</a></li>
+    </ul>
+</li>
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        <i class="bi bi-box-seam"></i> Insumos
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{% url 'insumos:lista_productos' %}">Inventario</a></li>
+        <li><a class="dropdown-item" href="{% url 'insumos:lista_movimientos' %}">Movimientos</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="{% url 'insumos:registrar_movimiento' %}">Registrar movimiento</a></li>
+       <li><a class="dropdown-item" href="{% url 'insumos:venta_rapida' %}">Venta rápida</a></li>
+ </ul>
+</li>
+
+
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'notificaciones:lista' %}">
+        <i class="bi bi-envelope-paper"></i> Notificaciones
+    </a>
+</li>
+
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'clases:lista_entrenadores' %}">
+        <i class="bi bi-person-badge"></i> Entrenadores
+    </a>
+</li>
         {% if user.rol == 'admin' or user.is_superuser %}
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">

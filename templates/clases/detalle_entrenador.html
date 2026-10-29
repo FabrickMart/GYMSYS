@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ entrenador.nombre_completo }} — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">{{ entrenador.nombre_completo }}</h2>
+        <p class="text-muted mb-0">
+            {% if entrenador.activo %}
+                <span class="badge bg-success">Activo</span>
+            {% else %}
+                <span class="badge bg-secondary">Baja</span>
+            {% endif %}
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'clases:lista_entrenadores' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+        {% if user.rol == 'admin' or user.is_superuser %}
+            <a href="{% url 'clases:editar_entrenador' entrenador.pk %}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            {% if entrenador.activo %}
+                <a href="{% url 'clases:baja_entrenador' entrenador.pk %}" class="btn btn-danger">
+                    <i class="bi bi-person-x"></i> Dar de baja
+                </a>
+            {% else %}
+                <a href="{% url 'clases:reactivar_entrenador' entrenador.pk %}" class="btn btn-success">
+                    <i class="bi bi-person-check"></i> Reactivar
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Datos personales</strong></div>
+            <div class="card-body">
+                <p><strong>Teléfono:</strong> {{ entrenador.telefono }}</p>
+                <p><strong>Email:</strong> {{ entrenador.email|default:"—" }}</p>
+                <p><strong>Fecha de ingreso:</strong> {{ entrenador.fecha_ingreso }}</p>
+                <p><strong>Notas:</strong> {{ entrenador.notas|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Clases activas asignadas</strong></div>
+            <div class="card-body">
+                {% if clases %}
+                    <ul class="mb-0">
+                    {% for c in clases %}
+                        <li>
+                            {{ c.nombre }} ({{ c.get_disciplina_display }})
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">Sin clases asignadas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

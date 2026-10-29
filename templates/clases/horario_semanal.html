@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Horario semanal — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-grid-3x3"></i> Horario semanal</h2>
+    <a href="{% url 'clases:lista_clases' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver a clases
+    </a>
+</div>
+
+{% if not franjas %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No hay horarios activos registrados aún.
+    </div>
+{% else %}
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-bordered mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 120px;">Horario</th>
+                    {% for valor, etiqueta in dias %}
+                        <th class="text-center">{{ etiqueta }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for franja in franjas %}
+                <tr>
+                    <td class="text-nowrap"><strong>{{ franja.0|time:"H:i" }} - {{ franja.1|time:"H:i" }}</strong></td>
+                    {% for valor, etiqueta in dias %}
+                        <td>
+                            {% with clases_dia=mapa|default_if_none:"" %}
+                            {% for dia, franjas_dia in mapa.items %}
+                                {% if dia == valor %}
+                                    {% for f, clases_lista in franjas_dia.items %}
+                                        {% if f == franja %}
+                                            {% for h in clases_lista %}
+                                                <div class="mb-1">
+                                                    <a href="{% url 'clases:detalle_clase' h.clase.pk %}" class="text-decoration-none">
+                                                        <span class="badge bg-primary">{{ h.clase.nombre }}</span>
+                                                    </a>
+                                                    <br><small class="text-muted">{{ h.clase.entrenador.nombre_completo }}</small>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                            {% endwith %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

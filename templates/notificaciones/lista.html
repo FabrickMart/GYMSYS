@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Notificaciones — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-envelope-paper"></i> Notificaciones enviadas</h2>
+    <form method="post" action="{% url 'notificaciones:enviar_ahora' %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success"
+                onclick="return confirm('¿Ejecutar el envío de recordatorios ahora?');">
+            <i class="bi bi-send"></i> Enviar recordatorios ahora
+        </button>
+    </form>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="text" name="q" value="{{ q }}" class="form-control"
+               placeholder="Buscar por alumno, matrícula, destino o asunto...">
+    </div>
+    <div class="col-md-2">
+        <select name="tipo" class="form-select">
+            <option value="">Todos los tipos</option>
+            {% for valor, etiqueta in tipos %}
+                <option value="{{ valor }}" {% if tipo == valor %}selected{% endif %}>{{ etiqueta }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="estado" class="form-select">
+            <option value="">Todos los estados</option>
+            {% for valor, etiqueta in estados %}
+                <option value="{{ valor }}" {% if estado == valor %}selected{% endif %}>{{ etiqueta }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-secondary w-100" type="submit">
+            <i class="bi bi-search"></i> Filtrar
+        </button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Alumno</th>
+                    <th>Destino</th>
+                    <th>Asunto</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for n in notificaciones %}
+                <tr>
+                    <td>{{ n.creado_en|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        {% if n.tipo == 'por_vencer' %}
+                            <span class="badge bg-warning text-dark">{{ n.get_tipo_display }}</span>
+                        {% elif n.tipo == 'vencido' %}
+                            <span class="badge bg-danger">{{ n.get_tipo_display }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ n.get_tipo_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ n.alumno.nombre_completo }} <br><small class="text-muted">{{ n.alumno.matricula }}</small></td>
+                    <td>{{ n.destino }}</td>
+                    <td>{{ n.asunto }}</td>
+                    <td>
+                        {% if n.estado == 'enviado' %}
+                            <span class="badge bg-success">Enviado</span>
+                        {% elif n.estado == 'fallido' %}
+                            <span class="badge bg-danger">Fallido</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ n.get_estado_display }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No hay notificaciones.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}}

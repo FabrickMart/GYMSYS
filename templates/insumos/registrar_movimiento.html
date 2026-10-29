@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar movimiento — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<h2 class="mb-3"><i class="bi bi-arrow-left-right"></i> Registrar movimiento</h2>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="card mb-3">
+        <div class="card-body row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Producto *</label>
+                {{ form.producto }}
+                {{ form.producto.errors }}
+                <div id="info-producto" class="mt-2 text-muted small"></div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Tipo *</label>
+                {{ form.tipo }}
+                {{ form.tipo.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Motivo *</label>
+                {{ form.motivo }}
+                {{ form.motivo.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Cantidad *</label>
+                {{ form.cantidad }}
+                {{ form.cantidad.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Precio unitario</label>
+                {{ form.precio_unitario }}
+                {{ form.precio_unitario.errors }}
+                <div class="form-text">Se autocompleta según el tipo.</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Monto total (calculado)</label>
+                <input type="text" id="monto-total" class="form-control" readonly value="—">
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Notas</label>
+                {{ form.notas }}
+                {{ form.notas.errors }}
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i>
+        El stock del producto se actualizará automáticamente al guardar el movimiento.
+        Los movimientos <strong>no se pueden editar ni borrar</strong>.
+    </div>
+
+    <div class="d-flex justify-content-between mb-5">
+        <a href="{% url 'insumos:lista_movimientos' %}" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle"></i> Registrar
+        </button>
+    </div>
+</form>
+
+<script>
+(function () {
+    const selProducto = document.getElementById('id_producto');
+    const selTipo = document.getElementById('id_tipo');
+    const selMotivo = document.getElementById('id_motivo');
+    const inpCantidad = document.getElementById('id_cantidad');
+    const inpPrecio = document.getElementById('id_precio_unitario');
+    const inpTotal = document.getElementById('monto-total');
+    const infoProducto = document.getElementById('info-producto');
+
+    let productoActual = null;
+
+    function cargarProducto() {
+        const id = selProducto.value;
+        if (!id) {
+            productoActual = null;
+            infoProducto.innerHTML = '';
+            actualizarPrecio();
+            return;
+        }
+        fetch('/insumos/api/producto/' + id + '/')
+            .then(r => r.json())
+            .then(data => {
+                productoActual = data;
+                infoProducto.innerHTML = `
+                    <span class="badge bg-primary">Stock: ${data.stock_actual}</span>
+                    <span class="badge bg-secondary">Mínimo: ${data.stock_minimo}</span>
+                    <span class="ms-2">P. venta: $${data.precio_venta.toFixed(2)}</span>
+                    <span class="ms-2">P. compra: $${data.precio_compra.toFixed(2)}</span>
+                `;
+                actualizarPrecio();
+            })
+            .catch(() => {});
+    }
+
+    function actualizarPrecio() {
+        if (!productoActual) {
+            inpTotal.value = '—';
+            return;
+        }
+        const tipo = selTipo.value;
+        const motivo = selMotivo.value;
+
+        // Autocompletar precio según tipo/motivo (solo si el campo está vacío o cambió el tipo)
+        let precioSugerido = null;
+        if (tipo === 'salida' && motivo === 'venta') {
+            precioSugerido = productoActual.precio_venta;
+        } else if (tipo === 'entrada' && (motivo === 'compra' || motivo === 'stock_inicial')) {
+            precioSugerido = productoActual.precio_compra;
+        }
+
+        if (precioSugerido !== null && (!inpPrecio.value || inpPrecio.dataset.autofilled === '1')) {
+            inpPrecio.value = precioSugerido.toFixed(2);
+            inpPrecio.dataset.autofilled = '1';
+        }
+
+        actualizarTotal();
+    }
+
+    function actualizarTotal() {
+        const cant = parseFloat(inpCantidad.value) || 0;
+        const precio = parseFloat(inpPrecio.value) || 0;
+        if (cant > 0 && precio >= 0) {
+            inpTotal.value = '$' + (cant * precio).toFixed(2);
+        } else {
+            inpTotal.value = '—';
+        }
+    }
+
+    // Bind
+    selProducto.addEventListener('change', cargarProducto);
+    selTipo.addEventListener('change', () => {
+        inpPrecio.dataset.autofilled = '';
+        actualizarPrecio();
+    });
+    selMotivo.addEventListener('change', () => {
+        inpPrecio.dataset.autofilled = '';
+        actualizarPrecio();
+    });
+    inpCantidad.addEventListener('input', actualizarTotal);
+    inpPrecio.addEventListener('input', () => {
+        inpPrecio.dataset.autofilled = '';
+        actualizarTotal();
+    });
+
+    // Cargar al inicio si viene producto preseleccionado
+    if (selProducto.value) cargarProducto();
+})();
+</script>
+{% endblock %}

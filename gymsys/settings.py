@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'apps.auditoria',
     'apps.alumnos',
     'apps.pagos',
+    'apps.notificaciones',
+    'apps.clases',
+    'apps.insumos',
 ]
 
 
@@ -204,3 +207,19 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'danger',
 }
+	
+
+# ============================================================
+# Configuración de email
+# ============================================================
+
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('brickamm@gmail.com', default='')
+EMAIL_HOST_PASSWORD = config('bieh rbae hakf wyab', default='')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='MG Team <brickamm@gmail.com>')
+
+# Nombre del gimnasio (para plantillas)
+GYM_NOMBRE= config('MGTEAM', default='MG Team')

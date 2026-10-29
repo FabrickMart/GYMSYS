@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if modo == 'crear' %}Nueva clase{% else %}Editar clase{% endif %} — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">
+    {% if modo == 'crear' %}
+        <i class="bi bi-plus-circle"></i> Nueva clase
+    {% else %}
+        <i class="bi bi-pencil"></i> Editar clase — {{ clase.nombre }}
+    {% endif %}
+</h2>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="card mb-3">
+        <div class="card-header"><strong>Datos de la clase</strong></div>
+        <div class="card-body row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Nombre *</label>
+                {{ form.nombre }}
+                {{ form.nombre.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Disciplina *</label>
+                {{ form.disciplina }}
+                {{ form.disciplina.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Nivel *</label>
+                {{ form.nivel }}
+                {{ form.nivel.errors }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Entrenador *</label>
+                {{ form.entrenador }}
+                {{ form.entrenador.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Cupo máximo *</label>
+                {{ form.cupo_maximo }}
+                {{ form.cupo_maximo.errors }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Duración (min) *</label>
+                {{ form.duracion_minutos }}
+                {{ form.duracion_minutos.errors }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Descripción</label>
+                {{ form.descripcion }}
+                {{ form.descripcion.errors }}
+            </div>
+            <div class="col-md-12">
+                <div class="form-check">
+                    {{ form.activo }}
+                    <label class="form-check-label" for="{{ form.activo.id_for_label }}">Activa</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+ <div class="card mb-3">
+    <div class="card-header">
+        <strong>Horarios</strong>
+        <small class="text-muted d-block">
+            La hora de fin se calcula automáticamente según la duración de la clase.
+        </small>
+    </div>
+    <div class="card-body">
+        {{ formset.management_form }}
+        {% if formset.non_form_errors %}
+            <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+        {% endif %}
+
+        <div id="formset-horarios">
+        {% for subform in formset %}
+            <div class="border rounded p-3 mb-3 horario-row">
+                {{ subform.id }}
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small">Días</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for checkbox in subform.dias_semana %}
+                                <div class="form-check form-check-inline">
+                                    {{ checkbox.tag }}
+                                    <label class="form-check-label small" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {{ subform.dias_semana.errors }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Hora de inicio</label>
+                        {{ subform.hora_inicio }}
+                        {{ subform.hora_inicio.errors }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">Hora de fin (calculada)</label>
+                        <input type="text" class="form-control hora-fin-calculada" readonly value="—"
+                               data-duracion="{{ form.instance.duracion_minutos|default:60 }}">
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check">
+                            {{ subform.activo }}
+                            <label class="form-check-label small" for="{{ subform.activo.id_for_label }}">Activo</label>
+                        </div>
+                        {% if formset.can_delete %}
+                        <div class="form-check">
+                            {{ subform.DELETE }}
+                            <label class="form-check-label small text-danger" for="{{ subform.DELETE.id_for_label }}">Eliminar</label>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+
+        <p class="text-muted small mb-0">
+            Puedes dejar horarios en blanco si aún no los defines.
+        </p>
+    </div>
+</div>
+
+
+    <div class="d-flex justify-content-between mb-5">
+        <a href="{% url 'clases:lista_clases' %}" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+    </div>
+</form>
+
+<script>
+(function () {
+    // Toma la duración de la clase del campo del formulario principal
+    function getDuracion() {
+        const durInput = document.getElementById('id_duracion_minutos');
+        return durInput ? parseInt(durInput.value) || 60 : 60;
+    }
+
+    function calcularFin(horaInicio, minutos) {
+        if (!horaInicio) return '—';
+        const [h, m] = horaInicio.split(':').map(Number);
+        if (isNaN(h) || isNaN(m)) return '—';
+        let total = h * 60 + m + minutos;
+        total = total % (24 * 60);  // por si cruza medianoche
+        const hh = String(Math.floor(total / 60)).padStart(2, '0');
+        const mm = String(total % 60).padStart(2, '0');
+        return hh + ':' + mm;
+    }
+
+    function actualizarFilas() {
+        const duracion = getDuracion();
+        document.querySelectorAll('.horario-row').forEach(row => {
+            const inicio = row.querySelector('input[type="time"]');
+            const finInput = row.querySelector('.hora-fin-calculada');
+            if (inicio && finInput) {
+                finInput.value = calcularFin(inicio.value, duracion);
+            }
+        });
+    }
+
+    // Actualizar al cambiar cualquier hora de inicio
+    document.querySelectorAll('.horario-row input[type="time"]').forEach(input => {
+        input.addEventListener('change', actualizarFilas);
+        input.addEventListener('input', actualizarFilas);
+    });
+
+    // Actualizar si cambia la duración de la clase
+    const durGlobal = document.getElementById('id_duracion_minutos');
+    if (durGlobal) {
+        durGlobal.addEventListener('change', actualizarFilas);
+        durGlobal.addEventListener('input', actualizarFilas);
+    }
+
+    // Ejecutar al cargar (para edición)
+    actualizarFilas();
+})();
+</script>
+
+
+{% endblock %}

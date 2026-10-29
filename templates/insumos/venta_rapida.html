@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Venta rápida — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-cart-plus"></i> Venta rápida</h2>
+    <a href="{% url 'insumos:lista_productos' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver al inventario
+    </a>
+</div>
+
+<p class="text-muted">Elige un producto y la cantidad. Se registra como venta automáticamente.</p>
+
+<div class="row g-3">
+    {% for p in productos %}
+    <div class="col-md-4">
+        <div class="card h-100 {% if p.stock_bajo %}border-danger{% endif %}">
+            <div class="card-body">
+                <h5 class="card-title">{{ p.nombre }}</h5>
+                <p class="mb-1"><code>{{ p.codigo }}</code></p>
+                <p class="mb-1"><strong>${{ p.precio_venta }}</strong></p>
+                <p class="mb-2">
+                    Stock:
+                    {% if p.stock_bajo %}
+                        <span class="badge bg-danger">{{ p.stock_actual }} (bajo)</span>
+                    {% else %}
+                        <span class="badge bg-success">{{ p.stock_actual }}</span>
+                    {% endif %}
+                </p>
+                <form method="post" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="producto_id" value="{{ p.pk }}">
+                    <input type="number" name="cantidad" min="1" max="{{ p.stock_actual }}" value="1"
+                           class="form-control form-control-sm" style="max-width: 80px;" required>
+                    <button type="submit" class="btn btn-sm btn-success flex-grow-1"
+                            {% if p.stock_actual == 0 %}disabled{% endif %}>
+                        <i class="bi bi-check2"></i> Vender
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">No hay productos activos.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

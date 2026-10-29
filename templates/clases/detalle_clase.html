@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ clase.nombre }} — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">{{ clase.nombre }}</h2>
+        <p class="text-muted mb-0">
+            {{ clase.get_disciplina_display }} · {{ clase.get_nivel_display }} ·
+            {% if clase.activo %}
+                <span class="badge bg-success">Activa</span>
+            {% else %}
+                <span class="badge bg-secondary">Baja</span>
+            {% endif %}
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'clases:lista_clases' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+        {% if user.rol == 'admin' or user.is_superuser %}
+            <a href="{% url 'clases:editar_clase' clase.pk %}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            {% if clase.activo %}
+                <a href="{% url 'clases:baja_clase' clase.pk %}" class="btn btn-danger">
+                    <i class="bi bi-x-circle"></i> Dar de baja
+                </a>
+            {% else %}
+                <a href="{% url 'clases:reactivar_clase' clase.pk %}" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Reactivar
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Información</strong></div>
+            <div class="card-body">
+                <p><strong>Entrenador:</strong> {{ clase.entrenador.nombre_completo }}</p>
+                <p><strong>Cupo:</strong> {{ clase.inscritos_activos }}/{{ clase.cupo_maximo }} ({{ clase.cupo_disponible }} disponible(s))</p>
+                <p><strong>Duración:</strong> {{ clase.duracion_minutos }} minutos</p>
+                <p><strong>Descripción:</strong> {{ clase.descripcion|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><strong>Horarios</strong></div>
+            <div class="card-body">
+                {% if horarios %}
+                    <ul class="mb-0">
+                    {% for h in horarios %}
+                        <li>{{ h.dias_display }} · {{ h.hora_inicio|time:"H:i" }} - {{ h.hora_fin|time:"H:i" }}</li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">Sin horarios asignados.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header"><strong>Alumnos inscritos ({{ inscripciones|length }})</strong></div>
+            <div class="card-body">
+                {% if inscripciones %}
+                    <ul class="mb-0">
+                    {% for i in inscripciones %}
+                        <li>{{ i.alumno.nombre_completo }} <small class="text-muted">({{ i.alumno.matricula }})</small></li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">Sin alumnos inscritos.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if modo == 'crear' %}Nuevo entrenador{% else %}Editar entrenador{% endif %} — GYMSYS-MMA{% endblock %}
+
+{% block content %}
+<h2 class="mb-3">
+    {% if modo == 'crear' %}
+        <i class="bi bi-person-plus"></i> Nuevo entrenador
+    {% else %}
+        <i class="bi bi-pencil"></i> Editar entrenador — {{ entrenador.nombre_completo }}
+    {% endif %}
+</h2>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <div class="card mb-3">
+        <div class="card-body row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Nombre(s) *</label>
+                {{ form.nombre }}
+                {{ form.nombre.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Apellido paterno *</label>
+                {{ form.apellido_paterno }}
+                {{ form.apellido_paterno.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Apellido materno *</label>
+                {{ form.apellido_materno }}
+                {{ form.apellido_materno.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Teléfono *</label>
+                {{ form.telefono }}
+                {{ form.telefono.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Email</label>
+                {{ form.email }}
+                {{ form.email.errors }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Fecha de ingreso *</label>
+                {{ form.fecha_ingreso }}
+                {{ form.fecha_ingreso.errors }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Notas</label>
+                {{ form.notas }}
+                {{ form.notas.errors }}
+            </div>
+            <div class="col-md-12">
+                <div class="form-check">
+                    {{ form.activo }}
+                    <label class="form-check-label" for="{{ form.activo.id_for_label }}">Activo</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between mb-5">
+        <a href="{% url 'clases:lista_entrenadores' %}" class="btn btn-outline-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> Guardar
+        </button>
+    </div>
+</form>
+{% endblock %}
